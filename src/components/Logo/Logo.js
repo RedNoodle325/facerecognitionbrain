@@ -5,9 +5,7 @@ const Logo = () => {
     return(
         <div className='ma4 mt0'>
             <Tilt className='Tilt br2 shadow-2' options={{ max: 25 }} style={{height: 250, width: 250 }}>
-                <div className='Tilt-inner tc'>
-                    <img alt='RedNoodles' src='src/components/Logo/redNoodleDesigns-logo.png'></img>
-                </div>
+                <img alt='RedNoodles' src='https://cdn.loveandlemons.com/wp-content/uploads/2020/07/IMG_29242.jpg'></img>
             </Tilt>
         </div>
     );
