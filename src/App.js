@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import Clarifai from 'clarifai';
 import './App.css';
 import Navigation from './components/Navigation/Navigation';
 import Logo from './components/Logo/Logo';
@@ -8,40 +7,75 @@ import Rank from './components/Rank/Rank';
 import ParticlesBg from 'particles-bg';
 import FaceRecognition from './components/FaceRecognition/FaceRecognition';
 
-
-const app = new Clarifai.App({
-  apiKey: '6f2d36b91be645dbb08b8779f4336ad5'
-});
-
 class App extends Component {
   
-
   constructor() {
     super();
     this.state = {
       input: '',
-      imageUrl: ''
+      imageUrl: '',
+      box: {}
     }
   }
+
+  calculateFaceLocation = (data) => {
+    const clarifaiFace = JSON.parse(data, null, 2).outputs[0].data.regions[0]
+     .region_info.bounding_box;
+    const image = document.getElementById("inputImage");
+    const width = Number(image.width);
+    const height = Number(image.height);
+    return {
+      leftCol: clarifaiFace.left_col * width,
+      topRow: clarifaiFace.top_row * height,
+      rightCol: width - (clarifaiFace.right_col * width),
+      bottomRow: height - (clarifaiFace.bottom_row * height),
+    };
+  }
+
+  displayFaceBox = (box) => {
+    this.setState({box: box});
+  }
+
   onInputChange = (event) => {
     this.setState({ input: event.target.value });
   }
 
   onButtonSubmit = () => {
-    this.setState({ imageUrl: this.state.input });
-    app.models
-      .predict(
+    const raw = JSON.stringify({
+      user_app_id : {
+        user_id: "rednoodle325",
+        app_id: "face-app"
+      },
+      inputs: [
         {
-          id: "face-detection",
-          name: "face-detection",
-          version: "6dc7e46bc9124c5c8824be4822abe105",
-          type: "visual-detector"
-        }, 
-        this.state.input)
+          data: {
+            image: {
+              url: this.state.input
+            },
+          },
+        },
+      ],
+    });
+ 
+    fetch(
+       "https://api.clarifai.com/v2/models/f76196b43bbd45c99b4f3cd8e8b40a8a/outputs",
+       {
+         method: "POST",
+         headers: {
+           Accept: "application/json",
+           Authorization: "Key ac7b865de7b5477ba821fcf9df1971f5",
+         },
+         body: raw,
+       }
+     )
+     .then(response => response.text())
+     .then((result) => this.displayFaceBox(this.calculateFaceLocation(result)))
+     .then(response => console.log(response))
+     .catch(error => console.log("error", error));
   }
+ 
 
   render() {
-    const { imageUrl } = this.state
     return (
       <div className="App">
         <ParticlesBg type='circle' bg={true} />
@@ -51,7 +85,7 @@ class App extends Component {
         <ImageLinkForm
           onInputChange={this.onInputChange}
           onButtonSubmit={this.onButtonSubmit} />
-        <FaceRecognition imageUrl={imageUrl} />
+        <FaceRecognition box={this.state.box} imageUrl={this.state.input} />
       </div>
     );
   }

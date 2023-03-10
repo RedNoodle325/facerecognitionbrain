@@ -4,6 +4,8 @@ body {
   font-family: "Courier New", Courier, monospaces;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  display: flex;
+  justify-content: center;
 }
 
 code {
